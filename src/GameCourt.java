@@ -6,8 +6,13 @@
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.FileReader;
+import java.io.IOException;
+
 import javax.swing.*;
+
 import java.util.ArrayList;
+import java.util.Scanner;
 
 /**
  * GameCourt
@@ -25,20 +30,26 @@ public class GameCourt extends JPanel {
 	private Square square;          // the Black Square, keyboard control
 	private Circle snitch;          // the Golden Snitch, bounces
 	private Poison poison;          // the Poison Mushroom, doesn't move
-	
+	ArrayList<Planet> board;
 	public boolean playing = false;  // whether the game is running
 	private JLabel status;       // Current status text (i.e. Running...)
 
 	// Game constants
-	public static final int COURT_WIDTH = 600;
-	public static final int COURT_HEIGHT = 600;
+	public int COURT_WIDTH = 600;
+	public int COURT_HEIGHT = 600;
 	public static final int SQUARE_VELOCITY = 4;
 	// Update interval for timer in milliseconds 
 	public static final int INTERVAL = 35; 
 
-	public GameCourt(JLabel status){
+	public GameCourt(JLabel status, int w, int h) {
+		
+		
 		// creates border around the court area, JComponent method
+		COURT_WIDTH = w;
+		COURT_HEIGHT = h;
 		setBorder(BorderFactory.createLineBorder(Color.BLACK));
+		
+		
         
         // The timer is an object which triggers an action periodically
         // with the given INTERVAL. One registers an ActionListener with
@@ -82,6 +93,27 @@ public class GameCourt extends JPanel {
 		this.status = status;
 	}
 
+	public void init(String boardFile) throws IOException{
+		board = new ArrayList<Planet>();
+		
+		Scanner scan = new Scanner(new FileReader(boardFile));
+		
+		while (scan.hasNext()) {
+			int x = scan.nextInt();
+			int y = scan.nextInt();
+			int r = scan.nextInt();
+			int pop = scan.nextInt();
+			
+			Planet p = new Planet(x, y, r, pop);
+			p.controlled = (int)(3*Math.random());
+			for (Planet p1: board) {
+				p.bridgesTo.add(p1);
+			}
+			board.add(p);
+			
+			
+		}
+	}
 	/** (Re-)set the state of the game to its initial state.
 	 */
 	public void reset() {
@@ -131,9 +163,9 @@ public class GameCourt extends JPanel {
 	@Override 
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
-		square.draw(g);
-		poison.draw(g);
-		snitch.draw(g);
+		for (Planet p : board) {
+			p.draw(g);
+		}
 	}
 
 	@Override

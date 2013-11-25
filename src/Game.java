@@ -7,6 +7,9 @@
 // imports necessary libraries for Java swing
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.util.ArrayList;
+
 import javax.swing.*;
 
 /** 
@@ -14,6 +17,7 @@ import javax.swing.*;
  * Main class that specifies the frame and widgets of the GUI
  */
 public class Game implements Runnable {
+	private int WIDTH = 900, HEIGHT = 750;
     public void run(){
         // NOTE : recall that the 'final' keyword notes inmutability
 		  // even for local variables. 3
@@ -26,13 +30,39 @@ public class Game implements Runnable {
 		  // Status panel
         final JPanel status_panel = new JPanel();
         frame.add(status_panel, BorderLayout.SOUTH);
-        final JLabel status = new JLabel("Running...");
+        final JLabel status = new JLabel("Main Menu");
         status_panel.add(status);
+        
+        
+        //Center Screen
+        final JPanel screen = new JPanel();
+        
+        
+        frame.add(screen, BorderLayout.CENTER);
 
         // Main playing area
-        final GameCourt court = new GameCourt(status);
-        frame.add(court, BorderLayout.CENTER);
-
+        final GameCourt court = new GameCourt(status, WIDTH, HEIGHT);
+        try {
+        	court.init("gameBoard.txt");
+        } catch (IOException e) {
+        	System.out.println("you fucked up with the files");
+        }
+        //frame.add(court, BorderLayout.CENTER);
+        final JButton start = new JButton("Start");
+        start.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		screen.removeAll();
+        		screen.add(court);
+        		court.reset();
+        	
+        		frame.repaint();
+        		frame.validate();
+        	}
+        });
+        ArrayList<JButton> buttons = new ArrayList<JButton>();
+        buttons.add(start);
+        final MainMenu main = new MainMenu(WIDTH, HEIGHT, buttons);
+        screen.add(main, BorderLayout.CENTER);
         // Reset button
         final JPanel control_panel = new JPanel();
         frame.add(control_panel, BorderLayout.NORTH);
@@ -55,8 +85,7 @@ public class Game implements Runnable {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
 
-        // Start game
-        court.reset();
+        
     }
 
     /*
