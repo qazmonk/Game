@@ -1,7 +1,10 @@
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.awt.font.TextLayout;
 import java.awt.geom.*;
+
+import javax.swing.SwingUtilities;
 
 
 public class Planet {
@@ -39,11 +42,14 @@ public class Planet {
 		s_two = 0;
 		a_two = 0;
 		
-		f = new Font("Verdana",1,r);
+		f = new Font("Courier New",1,r);
 		
 		bridgesTo = new ArrayList<Planet>();
 		
+		
 		String pop_string = Integer.toString(max_pop);
+		
+		
 		
 		
 	}
@@ -81,7 +87,15 @@ public class Planet {
 		
 		g.setFont(f);
 		
-		g.drawChars(pop_string.toCharArray(), 0, pop_string.length(), x, y);
+		// get metrics from the graphics
+		FontMetrics metrics = g.getFontMetrics(f);
+	
+		int len = metrics.stringWidth(pop_string);
+		
+		TextLayout tl = new TextLayout(pop_string, f, g2.getFontRenderContext());
+		int hgt = (int)tl.getBounds().getHeight();
+		
+		g.drawChars(pop_string.toCharArray(), 0, pop_string.length(), x-len/2, y+hgt/2);
 		
 		
 		

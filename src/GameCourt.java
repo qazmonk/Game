@@ -105,7 +105,7 @@ public class GameCourt extends JPanel {
 			int pop = scan.nextInt();
 			
 			Planet p = new Planet(x, y, r, pop);
-			p.controlled = (int)(3*Math.random());
+			p.controlled = (int)(3.0*Math.random());
 			for (Planet p1: board) {
 				p.bridgesTo.add(p1);
 			}
