@@ -33,7 +33,7 @@ public class GameCourt extends JPanel {
 	ArrayList<Planet> board;
 	public boolean playing = false;  // whether the game is running
 	private JLabel status;       // Current status text (i.e. Running...)
-
+	//afslhsa
 	// Game constants
 	public int COURT_WIDTH = 600;
 	public int COURT_HEIGHT = 600;
