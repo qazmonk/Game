@@ -3,57 +3,61 @@ import java.awt.Graphics;
 import java.awt.Point;
 
 
-public class Birdie {
-	private double x, y, vx, vy;
+public class Birdie extends GameObj {
+	
 	private double drag = 0.2766;
-	private double pixelsPerMeter;
-	private double grav = 9.8;
-	private int r = 5;
+	private double friction = 0.8;
+	private double bounce = 0.5;
+	
+	
 	private Color c = Color.GRAY;
 	
-	public Birdie(double ppm) {
-		x = 0; y = 0;
-		vx = 0; vy = 0;
-		pixelsPerMeter = ppm;
-		System.out.println(ppm*13.4);
+	public Birdie(double ppm, int max_x, int max_y) {
+		PIXELS_PER_METER = ppm;
+		
+		
+		pos_x = 0;
+		pos_y = 0;
+		
+		v_x = 0;
+		v_y = 0;
+		
+		this.max_x = max_x;
+		this.max_y = max_y;
+		
+		width = toPixels(0.1);
+		height = width;
 	}
 	
-	private double toMeters(double p) {
-		return p/pixelsPerMeter;
-	}
-	private int toPixels(double m) {
-		return (int)(m*pixelsPerMeter);
-	}
+	
 	public void update(double dt) {
-		vy -= drag*(vy*vy)*dt*Math.signum(vy);
-		vx -= drag*(vx*vx)*dt*Math.signum(vx);
-		vy += grav*dt;
-		y += vy*dt;
-		x += vx*dt;
+		v_y -= toPixels(drag*(toMeters(v_y)*toMeters(v_y))*dt*Math.signum(v_y));
 		
+		v_x -= toPixels(drag*(toMeters(v_x)*toMeters(v_x))*dt*Math.signum(v_x));
+		v_y += toPixels(grav)*dt;
+		pos_y += v_y*dt;
+		pos_x += v_x*dt;
+		
+		
+	}
+	
+	public void hitWall(Point n) {
+		
+		double d = (v_x*n.x + v_y*n.y)*bounce;
+		double d2 = (v_x*(-n.y) + v_y*n.x)*friction;
+		
+		v_x = -d*n.x+d2*-n.y;
+		v_y = -d*n.y+d2*n.x;
 		
 	}
 	public void paint(Graphics g) {
 		g.setColor(c);
 		
-		g.fillOval(toPixels(x) - r, toPixels(y) - r, (int)r*2, (int)r*2);
+		g.fillOval((int)(pos_x- width/2), (int)(pos_y - width/2), (int)width, (int)height);
 		
 	}
 	
-	public void setVelocity(double x, double y) {
-		vx = toMeters(x);
-		vy = toMeters(y);
-	}
-	public void setPosition(double x, double y) {
-		this.x = toMeters(x);
-		this.y = toMeters(y);
-	}
-	public Point getPosition() {
-		return new Point(toPixels(x), toPixels(y));
-	}
-	public Point getVelocity() {
-		return new Point(toPixels(vx), toPixels(vy));
-	}
+	
 	
 
 }

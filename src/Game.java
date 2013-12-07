@@ -42,11 +42,8 @@ public class Game implements Runnable {
 
         // Main playing area
         final GameCourt court = new GameCourt(status, WIDTH, HEIGHT);
-        try {
-        	court.init("gameBoard.txt");
-        } catch (IOException e) {
-        	System.out.println("you fucked up with the files");
-        }
+        
+        court.init();
         //frame.add(court, BorderLayout.CENTER);
         final JButton start = new JButton("Start");
         start.addActionListener(new ActionListener() {

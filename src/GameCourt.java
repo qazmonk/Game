@@ -41,6 +41,7 @@ public class GameCourt extends JPanel {
 	public static final int INTERVAL = 35; 
 	
 	private Birdie b;
+	private Player p;
 
 	public GameCourt(JLabel status, int w, int h) {
 		
@@ -71,6 +72,22 @@ public class GameCourt extends JPanel {
 		// When this component has the keyboard focus, key
 		// events will be handled by its key listener.
 		setFocusable(true);
+		
+		
+		addKeyListener(new KeyAdapter(){
+            public void keyPressed(KeyEvent e){
+                    if (e.getKeyCode() == KeyEvent.VK_D)
+                            p.moveRight();
+                    else if (e.getKeyCode() == KeyEvent.VK_A)
+                            p.moveLeft();
+                    else if (e.getKeyCode() == KeyEvent.VK_W)
+                            p.jump();
+            }
+            public void keyReleased(KeyEvent e){
+                    p.stopMoving();
+            }
+    });
+
 
 		// this key listener allows the square to move as long
 		// as an arrow key is pressed, by changing the square's
@@ -81,10 +98,19 @@ public class GameCourt extends JPanel {
 		this.status = status;
 	}
 
-	public void init(String boardFile) throws IOException{
-		b = new Birdie(PIXELS_PER_METER);
-		b.setPosition(10, 500);
-		b.setVelocity(COURT_WIDTH, -COURT_HEIGHT);
+	public void init() {
+		
+		p = new Player(true, PIXELS_PER_METER, COURT_WIDTH, COURT_HEIGHT);
+		p.pos_x = 200.0;
+		p.pos_y = COURT_HEIGHT/2;
+		
+		
+		
+		b = new Birdie(PIXELS_PER_METER, COURT_WIDTH, COURT_HEIGHT);
+		b.pos_x = 10.0;
+		b.pos_y = 500;
+		b.v_x = COURT_WIDTH;
+		b.v_y = -COURT_HEIGHT;
 		
 		
 		
@@ -97,9 +123,17 @@ public class GameCourt extends JPanel {
 		playing = true;
 		status.setText("Running...");
 		
-		b = new Birdie(PIXELS_PER_METER);
-		b.setPosition(10, 500);
-		b.setVelocity(COURT_WIDTH, -COURT_HEIGHT);
+		p = new Player(true, PIXELS_PER_METER, COURT_WIDTH, COURT_HEIGHT);
+		p.pos_x = 200.0;
+		p.pos_y = COURT_HEIGHT/2;
+		
+		
+		
+		b = new Birdie(PIXELS_PER_METER, COURT_WIDTH, COURT_HEIGHT);
+		b.pos_x = 10.0;
+		b.pos_y = 500;
+		b.v_x = COURT_WIDTH;
+		b.v_y = -COURT_HEIGHT;
 
 		// Make sure that this component has the keyboard focus
 		requestFocusInWindow();
@@ -114,12 +148,10 @@ public class GameCourt extends JPanel {
 			// advance the square and snitch in their
 			// current direction.
 			b.update(INTERVAL/1000.0);
-			Point p = b.getPosition();
-			if (p.y > COURT_HEIGHT) {
-				b.setPosition(p.x, COURT_HEIGHT);
-				Point v = b.getVelocity();
-				b.setVelocity(v.x, -v.y);
-			}
+			b.clip();
+			
+			p.update(INTERVAL/1000.0);
+			p.clip();
 			// update the display
 			repaint();
 		} 
@@ -129,6 +161,7 @@ public class GameCourt extends JPanel {
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
 		b.paint(g);
+		p.paint(g);
 		
 	}
 
