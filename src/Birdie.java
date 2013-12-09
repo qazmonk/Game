@@ -25,8 +25,10 @@ public class Birdie extends GameObj {
 		this.max_x = max_x;
 		this.max_y = max_y;
 		
-		width = toPixels(0.1);
+		width = toPixels(0.2);
 		height = width;
+		
+	
 	}
 	
 	
@@ -34,6 +36,10 @@ public class Birdie extends GameObj {
 		v_y -= toPixels(drag*(toMeters(v_y)*toMeters(v_y))*dt*Math.signum(v_y));
 		
 		v_x -= toPixels(drag*(toMeters(v_x)*toMeters(v_x))*dt*Math.signum(v_x));
+		/*
+		 * v = ppm*drag*v^2/ppm^2*dt
+		 * ppm/drag/dt = v
+		 */
 		v_y += toPixels(grav)*dt;
 		pos_y += v_y*dt;
 		pos_x += v_x*dt;
@@ -41,7 +47,7 @@ public class Birdie extends GameObj {
 		
 	}
 	
-	public void hitWall(Point n) {
+	public void hitWall(Vec n) {
 		
 		double d = (v_x*n.x + v_y*n.y)*bounce;
 		double d2 = (v_x*(-n.y) + v_y*n.x)*friction;

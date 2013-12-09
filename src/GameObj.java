@@ -66,24 +66,24 @@ public abstract class GameObj {
 	public void clip(){
 		if (pos_x < width/2) {
 			pos_x = width/2;
-			hitWall(new Point(1, 0));
+			hitWall(new Vec(1, 0));
 		}
 		else if (pos_x > max_x-width/2) {
 			pos_x = max_x-width/2;
-			hitWall(new Point(-1, 0));
+			hitWall(new Vec(-1, 0));
 		}
 
 		if (pos_y < height/2){
 			pos_y = height/2;
-			hitWall(new Point(0, -1));
+			hitWall(new Vec(0, -1));
 		}
 		else if (pos_y > max_y-height/2) {
 			pos_y = max_y-height/2;
-			hitWall(new Point(0, 1));
+			hitWall(new Vec(0, 1));
 		}
 	}
 	
-	abstract public void hitWall(Point n);
+	abstract public void hitWall(Vec n);
 
 	public double toMeters(double p) {
 		return p/PIXELS_PER_METER;

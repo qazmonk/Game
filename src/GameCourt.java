@@ -29,6 +29,7 @@ public class GameCourt extends JPanel {
 	// the state of the game logic
 	        // the Poison Mushroom, doesn't move
 	ArrayList<Planet> board;
+	ArrayList<Birdie> bs;
 	public boolean playing = false;  // whether the game is running
 	private JLabel status;       // Current status text (i.e. Running...)
 	//afslhsa
@@ -38,10 +39,13 @@ public class GameCourt extends JPanel {
 	public double PIXELS_PER_METER = COURT_WIDTH/13.4;
 	public static final int SQUARE_VELOCITY = 4;
 	// Update interval for timer in milliseconds 
-	public static final int INTERVAL = 35; 
+	public static final int INTERVAL = 25; 
 	
 	private Birdie b;
 	private Player p;
+	private Net n;
+	
+	private int c = 50;
 
 	public GameCourt(JLabel status, int w, int h) {
 		
@@ -52,7 +56,7 @@ public class GameCourt extends JPanel {
 		PIXELS_PER_METER = COURT_WIDTH/13.4;
 		setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		
-		
+		bs = new ArrayList<Birdie>();
         
 		
         // The timer is an object which triggers an action periodically
@@ -76,15 +80,24 @@ public class GameCourt extends JPanel {
 		
 		addKeyListener(new KeyAdapter(){
             public void keyPressed(KeyEvent e){
-                    if (e.getKeyCode() == KeyEvent.VK_D)
-                            p.moveRight();
-                    else if (e.getKeyCode() == KeyEvent.VK_A)
-                            p.moveLeft();
-                    else if (e.getKeyCode() == KeyEvent.VK_W)
-                            p.jump();
+            	if (e.getKeyCode() == KeyEvent.VK_D)
+            		p.rightPressed();
+                else if (e.getKeyCode() == KeyEvent.VK_A)
+                    p.leftPressed();
+                else if (e.getKeyCode() == KeyEvent.VK_W)
+                    p.upPressed();
+                else if (e.getKeyCode() == KeyEvent.VK_G)
+                	p.hitPressed();
             }
             public void keyReleased(KeyEvent e){
-                    p.stopMoving();
+            	if (e.getKeyCode() == KeyEvent.VK_D)
+                    p.rightReleased();
+            	else if (e.getKeyCode() == KeyEvent.VK_A)
+                    p.leftReleased();
+            	else if (e.getKeyCode() == KeyEvent.VK_W)
+                    p.upReleased();
+            	else if (e.getKeyCode() == KeyEvent.VK_G)
+                	p.hitReleased();
             }
     });
 
@@ -123,7 +136,7 @@ public class GameCourt extends JPanel {
 		playing = true;
 		status.setText("Running...");
 		
-		p = new Player(true, PIXELS_PER_METER, COURT_WIDTH, COURT_HEIGHT);
+		p = new Player(true, PIXELS_PER_METER, COURT_WIDTH/2, COURT_HEIGHT);
 		p.pos_x = 200.0;
 		p.pos_y = COURT_HEIGHT/2;
 		
@@ -134,6 +147,16 @@ public class GameCourt extends JPanel {
 		b.pos_y = 500;
 		b.v_x = COURT_WIDTH;
 		b.v_y = -COURT_HEIGHT;
+		
+		n = new Net(PIXELS_PER_METER, COURT_WIDTH/2, COURT_HEIGHT);
+		n.pos_y -= n.height/2;
+		
+		
+		p.addBirdie(b);
+		
+		p.isServing = true;
+		
+	
 
 		// Make sure that this component has the keyboard focus
 		requestFocusInWindow();
@@ -145,6 +168,8 @@ public class GameCourt extends JPanel {
      */
 	void tick(){
 		if (playing) {
+			
+			n.collideBirdies(bs, INTERVAL/1000.0);
 			// advance the square and snitch in their
 			// current direction.
 			b.update(INTERVAL/1000.0);
@@ -152,8 +177,30 @@ public class GameCourt extends JPanel {
 			
 			p.update(INTERVAL/1000.0);
 			p.clip();
+			
+			/*for (Birdie temp_b: bs) {
+				temp_b.update(INTERVAL/1000.0);
+				temp_b.clip();
+			}*/
 			// update the display
 			repaint();
+			
+			
+			if (c <= 0) {
+				Birdie t = new Birdie(PIXELS_PER_METER, COURT_WIDTH, COURT_HEIGHT);
+				t.pos_x = COURT_WIDTH*0.8;
+				t.pos_y = COURT_HEIGHT*0.9;
+				t.v_x = -2000;
+				t.v_y = -5000;
+				
+				
+				bs.add(t);
+				p.addBirdie(t);
+				c = 50;
+				
+			}
+			c--;
+			
 		} 
 	}
 
@@ -162,6 +209,9 @@ public class GameCourt extends JPanel {
 		super.paintComponent(g);
 		b.paint(g);
 		p.paint(g);
+		n.paint(g);
+		for (Birdie temp_b: bs)
+			temp_b.paint(g);
 		
 	}
 
