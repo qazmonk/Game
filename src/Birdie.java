@@ -12,6 +12,14 @@ public class Birdie extends GameObj {
 	
 	private Color c = Color.GRAY;
 	
+	
+	
+	public Player lastHitBy = null;
+	private Player lastLastHitBy = null;
+	
+	private boolean justHit = false;
+	private boolean hasHitSomething = false;
+	
 	public Birdie(double ppm, int max_x, int max_y) {
 		PIXELS_PER_METER = ppm;
 		
@@ -33,22 +41,23 @@ public class Birdie extends GameObj {
 	
 	
 	public void update(double dt) {
-		v_y -= toPixels(drag*(toMeters(v_y)*toMeters(v_y))*dt*Math.signum(v_y));
 		
+		
+		justHit = (lastLastHitBy != lastHitBy && lastHitBy != null);
+		lastLastHitBy = lastHitBy;
+			
+		v_y -= toPixels(drag*(toMeters(v_y)*toMeters(v_y))*dt*Math.signum(v_y));
 		v_x -= toPixels(drag*(toMeters(v_x)*toMeters(v_x))*dt*Math.signum(v_x));
-		/*
-		 * v = ppm*drag*v^2/ppm^2*dt
-		 * ppm/drag/dt = v
-		 */
 		v_y += toPixels(grav)*dt;
 		pos_y += v_y*dt;
 		pos_x += v_x*dt;
 		
 		
 	}
-	
+	@Override
 	public void hitWall(Vec n) {
-		
+
+		hasHitSomething = true;
 		double d = (v_x*n.x + v_y*n.y)*bounce;
 		double d2 = (v_x*(-n.y) + v_y*n.x)*friction;
 		
@@ -62,6 +71,19 @@ public class Birdie extends GameObj {
 		g.fillOval((int)(pos_x- width/2), (int)(pos_y - width/2), (int)width, (int)height);
 		
 	}
+	public void serve() {
+		
+		hasHitSomething = false;
+	}
+	public boolean wasHit() {
+		return justHit;
+	}
+	public boolean inPlay() {
+		
+		return !hasHitSomething;
+	}
+	
+	
 	
 	
 	

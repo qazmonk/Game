@@ -28,11 +28,16 @@ public class Player extends GameObj{
 	
 	private double range_x, range_y;
 	
-	private ArrayList<Birdie> birdies;
+	private Birdie birdie;
 	
 	public boolean isServing = false;
+	public boolean isBeingServedTo = false;
 	
-	public Player(boolean right, double ppm, int max_x, int max_y) {
+	private boolean notMoving = false;
+	
+	
+	
+	public Player(boolean right, double ppm, int min_x, int min_y, int max_x, int max_y) {
 		facesRight = right;
 		PIXELS_PER_METER = ppm;
 		
@@ -45,6 +50,8 @@ public class Player extends GameObj{
 		
 		this.max_x = max_x;
 		this.max_y = max_y;
+		this.min_x = min_x;
+		this.min_y = min_y;
 		
 		width = toPixels(0.7);
 		height = toPixels(1.2);
@@ -60,7 +67,10 @@ public class Player extends GameObj{
 		dropStrength = toPixels(dropStrength);
 		serveStrength = toPixels(serveStrength);
 		
-		birdies = new ArrayList<Birdie>();
+		
+		
+		double[] t = getHitVector(0, arm_x-range_y/2);
+		System.out.println(facesRight + " " + t[0] + " " + t[1]);
 	}
 	
 
@@ -72,7 +82,10 @@ public class Player extends GameObj{
 		LEFT = true;;
 	}
 	public void stopMoving() {
-		v_x = 0;
+		notMoving = true;
+	}
+	public void allowMoving() {
+		notMoving = false;
 	}
 	public void hitGround() {
 		onGround = true;
@@ -101,12 +114,16 @@ public class Player extends GameObj{
 		HIT = false;
 	}
 	private double[] getHitVector(double x, double y) {
+		if (!facesRight) {
+			x *= -1;
+		}
 		double hv_y = x-30;
 		double hv_x = -5*y;
 		
 		double m = Math.sqrt(hv_x*hv_x + hv_y*hv_y);
-		if (isServing) {
-			System.out.println(hv_x + " " + hv_y);
+		
+		if (!facesRight) {
+			hv_x *= -1;
 		}
 		double[] out = {hv_x/m, hv_y/m};
 		return out;
@@ -139,29 +156,20 @@ public class Player extends GameObj{
 		if (v_x < -MAX_SPEED)
 			v_x = -MAX_SPEED;
 		
+		if (notMoving) {
+			v_x = 0;
+		}
 		
 		v_y += toPixels(grav)*dt;
 		pos_x += v_x*dt;
 		pos_y += v_y*dt;
-		
-		if (isServing) {
-			if (facesRight) {
-				pos_x = max_x-toPixels(1.98);
-			} else {
-				pos_x = max_x+toPixels(1.98);
-			}
-			
-			Birdie t = birdies.get(0);
-			
-			if (facesRight) {
-				t.pos_x = pos_x - 0.7*range_x;
-			} else {
-				t.pos_x = pos_x + 0.7*range_x;
-			}
-			t.pos_y = pos_y - 0.5*range_y + arm_y;
-			t.v_x = 0;
-			t.v_y = 0;
+		if (isServing || isBeingServedTo) {
+			moveToServePosition();
 		}
+		if (isServing) {
+			grabBirdie();
+		}
+	
 		
 		if (HIT && hitCount <= 0) {
 			if (swing()) {
@@ -170,7 +178,7 @@ public class Player extends GameObj{
 			hitCount = hitSpeed;
 		}
 		if (hitCount > 0) {
-			stopMoving();
+			v_x = 0;
 		}
 		hitCount--;
 		
@@ -181,50 +189,52 @@ public class Player extends GameObj{
 			hitGround();
 		}
 		else {
-			stopMoving();
+			v_x = 0;
 		}
 	}
 	public void addBirdie(Birdie b) {
-		birdies.add(b);
+		birdie = b;
 	}
 	public void removeBirdie(Birdie b) {
-		birdies.remove(b);
+		birdie = b;
 	}
 	public boolean swing() {
 		
-		for (Birdie b: birdies) {
-			double x = b.pos_x-(pos_x+arm_x);
-			double y = b.pos_y-(pos_y+arm_y);
-			
-			
-			double m = Math.sqrt(x*x/range_x/range_x + y*y/range_y/range_y);
-			
-			if (m < 1) {
-				double str = hitStrength;	
-				if (RIGHT) {
-					if (facesRight)
-						str = smashStrength;
-					else
-						str = dropStrength;
-				}
-				if (LEFT) {
-					if (facesRight)
-						str = dropStrength;
-					else
-						str = smashStrength;
-				}
-				double[] hv = getHitVector(x,y);
-				
-				if (isServing) {
-					str = serveStrength;
-				}
-				b.v_x = hv[0]*str;
-				b.v_y = hv[1]*str;
-				
-				return true;
-				
+		
+		double x = birdie.pos_x - (pos_x + arm_x);
+		double y = birdie.pos_y - (pos_y + arm_y);
+
+		double m = Math.sqrt(x * x / range_x / range_x + y * y / range_y
+				/ range_y);
+
+		if (m < 1 && y < 0) {
+			double str = hitStrength;
+			if (RIGHT) {
+				if (facesRight)
+					str = smashStrength;
+				else
+					str = dropStrength;
 			}
+			if (LEFT) {
+				if (facesRight)
+					str = dropStrength;
+				else
+					str = smashStrength;
+			}
+			double[] hv = getHitVector(x, y);
+
+			if (isServing) {
+				str = serveStrength;
+			}
+			birdie.v_x = hv[0] * str;
+			birdie.v_y = hv[1] * str;
+
+			birdie.lastHitBy = this;
+
+			return true;
+
 		}
+		
 		
 		return false;
 	}
@@ -241,6 +251,40 @@ public class Player extends GameObj{
 		}
 		
 	}
+	
+	public void grabBirdie() {
+		
+		
+		if (facesRight) {
+			birdie.pos_x = pos_x - 0.7*range_x;
+		} else {
+			birdie.pos_x = pos_x + 0.7*range_x;
+		}
+		birdie.pos_y = pos_y - 0.5*range_y + arm_y;
+		birdie.v_x = 0;
+		birdie.v_y = 0;
+	}
+	public boolean inRange(Birdie b) {
+		double x = b.pos_x-(pos_x+arm_x);
+		double y = b.pos_y-(pos_y+arm_y);
+		double m = Math.sqrt(x*x/range_x/range_x + y*y/range_y/range_y);
+		return m < 1;
+	}
+
+	public void moveToServePosition() {
+		if (facesRight) {
+			pos_x = max_x-toPixels(1.98);
+		} else {
+			pos_x = min_x+toPixels(1.98);
+		}
+	}
+
+	@Override
+	public String toString() {
+		return "Player " + ((facesRight) ? "Left" : "Right");
+	}
+	
+	
 	
 
 }

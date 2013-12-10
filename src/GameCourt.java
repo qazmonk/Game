@@ -31,29 +31,43 @@ public class GameCourt extends JPanel {
 	ArrayList<Planet> board;
 	ArrayList<Birdie> bs;
 	public boolean playing = false;  // whether the game is running
-	private JLabel status;       // Current status text (i.e. Running...)
+	
 	//afslhsa
 	// Game constants
 	public int COURT_WIDTH = 600;
 	public int COURT_HEIGHT = 600;
+	public int COURT_LENGTH = 700;
+	private Counter score_left;
+	private Counter score_right;
 	public double PIXELS_PER_METER = COURT_WIDTH/13.4;
 	public static final int SQUARE_VELOCITY = 4;
 	// Update interval for timer in milliseconds 
 	public static final int INTERVAL = 25; 
 	
 	private Birdie b;
-	private Player p;
+	private Player p, o;
 	private Net n;
+	private PlayerAI opponentAI;
+	private Player serving = null;
+	
+	private Player lastTouch;
+	
+	private enum GameState {
+		Playing, LeftPlayerServing, RightPlayerServing, PointOver, NotPlaying
+	}
+	
+	private GameState state = GameState.NotPlaying;
+	
 	
 	private int c = 50;
 
-	public GameCourt(JLabel status, int w, int h) {
+	public GameCourt (int w, int h) {
 		
 		
 		// creates border around the court area, JComponent method
 		COURT_WIDTH = w;
 		COURT_HEIGHT = h;
-		PIXELS_PER_METER = COURT_WIDTH/13.4;
+		PIXELS_PER_METER = COURT_LENGTH/13.4;
 		setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		
 		bs = new ArrayList<Birdie>();
@@ -108,22 +122,11 @@ public class GameCourt extends JPanel {
 		// moves the square.)
 		
 
-		this.status = status;
+		
 	}
 
 	public void init() {
 		
-		p = new Player(true, PIXELS_PER_METER, COURT_WIDTH, COURT_HEIGHT);
-		p.pos_x = 200.0;
-		p.pos_y = COURT_HEIGHT/2;
-		
-		
-		
-		b = new Birdie(PIXELS_PER_METER, COURT_WIDTH, COURT_HEIGHT);
-		b.pos_x = 10.0;
-		b.pos_y = 500;
-		b.v_x = COURT_WIDTH;
-		b.v_y = -COURT_HEIGHT;
 		
 		
 		
@@ -133,12 +136,17 @@ public class GameCourt extends JPanel {
 	public void reset() {
 
 		
-		playing = true;
-		status.setText("Running...");
+		state = GameState.LeftPlayerServing;
 		
-		p = new Player(true, PIXELS_PER_METER, COURT_WIDTH/2, COURT_HEIGHT);
+		
+		
+		p = new Player(true, PIXELS_PER_METER, 0, 0, COURT_WIDTH/2, COURT_HEIGHT);
 		p.pos_x = 200.0;
-		p.pos_y = COURT_HEIGHT/2;
+		p.pos_y = COURT_HEIGHT-p.height/2;
+		
+		o = new Player(false, PIXELS_PER_METER, COURT_WIDTH/2, 0, COURT_WIDTH, COURT_HEIGHT);
+		o.pos_x = 400.0;
+		o.pos_y = COURT_HEIGHT-p.height/2;
 		
 		
 		
@@ -156,8 +164,15 @@ public class GameCourt extends JPanel {
 		
 		p.isServing = true;
 		
+		opponentAI = new PlayerAI(o, p, b);
+		
+		bs.add(b);
+		
+		o.addBirdie(b);
+		
 	
-
+		score_left = new Counter(0, COURT_WIDTH/3, 200);
+		score_right = new Counter(0, COURT_WIDTH*2/3, 200);
 		// Make sure that this component has the keyboard focus
 		requestFocusInWindow();
 	}
@@ -166,9 +181,92 @@ public class GameCourt extends JPanel {
      * This method is called every time the timer defined
      * in the constructor triggers.
      */
+	private Player pointFor(double x) {
+		if (x > COURT_WIDTH/2 && x < COURT_WIDTH/2 + COURT_LENGTH/2) {
+			return p;
+		} else {
+			return o;
+		}
+	}
+	private boolean out(double x) {
+		return x < COURT_WIDTH/2-COURT_LENGTH/2 || 
+				x > COURT_WIDTH/2+COURT_LENGTH/2;
+	}
+	private boolean RightPlayerPoint() {
+		
+		if (out(b.pos_x)) {
+			System.out.println("hit out");
+			return b.lastHitBy == p;
+		}
+		System.out.println("hit in");
+		return pointFor(b.pos_x) == o;
+	}
 	void tick(){
-		if (playing) {
-			
+		if (state != GameState.NotPlaying) {
+			switch (state) {
+			case Playing:
+				//System.out.println("playing");
+				if (!b.inPlay()) {
+					
+					if (RightPlayerPoint()) {
+						System.out.println("Right won");
+						serving = o;
+						score_right.inc();
+					} else {
+						System.out.println("Left won");
+						serving = p;
+						score_left.inc();
+					}
+					
+					System.out.println("Point Over");
+					state = GameState.PointOver;
+				}
+				if (b.wasHit()) {
+					System.out.println(lastTouch + " " + b.lastHitBy);
+					lastTouch = b.lastHitBy;
+				}
+				break;
+			case LeftPlayerServing:
+				
+				System.out.println("Left Serve");
+				p.isServing = true;
+				p.grabBirdie();
+				b.serve();
+				o.isServing = false;
+				p.moveToServePosition();
+				o.moveToServePosition();
+				state = GameState.Playing;
+				break;
+			case RightPlayerServing:
+				
+				System.out.println("Right Serve");
+				p.isServing = false;
+				
+				b.serve();
+				o.isServing = true;
+				o.grabBirdie();
+				p.moveToServePosition();
+				o.moveToServePosition();
+				
+				state = GameState.Playing;
+				break;
+			case PointOver:
+				p.stopMoving();
+				o.stopMoving();
+				if (!b.isMoving(INTERVAL/1000.0)) {
+					System.out.println("point won by " + serving.toString());
+					if (serving == p) {
+						state = GameState.LeftPlayerServing;
+					} else if (serving == o) {
+						state = GameState.RightPlayerServing;
+					}
+					p.allowMoving();
+					o.allowMoving();
+					
+				
+				}
+				break;
+			} 
 			n.collideBirdies(bs, INTERVAL/1000.0);
 			// advance the square and snitch in their
 			// current direction.
@@ -178,40 +276,32 @@ public class GameCourt extends JPanel {
 			p.update(INTERVAL/1000.0);
 			p.clip();
 			
-			/*for (Birdie temp_b: bs) {
-				temp_b.update(INTERVAL/1000.0);
-				temp_b.clip();
-			}*/
-			// update the display
+			
+			opponentAI.update(INTERVAL/1000.0);
+			o.update(INTERVAL/1000.0);
+			o.clip();
+			
+			
 			repaint();
-			
-			
-			if (c <= 0) {
-				Birdie t = new Birdie(PIXELS_PER_METER, COURT_WIDTH, COURT_HEIGHT);
-				t.pos_x = COURT_WIDTH*0.8;
-				t.pos_y = COURT_HEIGHT*0.9;
-				t.v_x = -2000;
-				t.v_y = -5000;
-				
-				
-				bs.add(t);
-				p.addBirdie(t);
-				c = 50;
-				
-			}
-			c--;
-			
-		} 
+		}
+		
 	}
-
+	
 	@Override 
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
 		b.paint(g);
 		p.paint(g);
 		n.paint(g);
-		for (Birdie temp_b: bs)
-			temp_b.paint(g);
+		o.paint(g);
+		
+		g.drawRect(COURT_WIDTH/2-2-COURT_LENGTH/2, (int)(COURT_HEIGHT-2*PIXELS_PER_METER), 4, (int)(2*PIXELS_PER_METER));
+		g.drawRect(COURT_WIDTH/2-2+COURT_LENGTH/2, (int)(COURT_HEIGHT-2*PIXELS_PER_METER), 4, (int)(2*PIXELS_PER_METER));
+		
+		score_left.paint(g);
+		score_right.paint(g);
+
+	
 		
 	}
 

@@ -28,10 +28,9 @@ public class Game implements Runnable {
         frame.setLocation(300,300);
 
 		  // Status panel
-        final JPanel status_panel = new JPanel();
-        frame.add(status_panel, BorderLayout.SOUTH);
+       
         final JLabel status = new JLabel("Main Menu");
-        status_panel.add(status);
+      
         
         
         //Center Screen
@@ -41,7 +40,7 @@ public class Game implements Runnable {
         frame.add(screen, BorderLayout.CENTER);
 
         // Main playing area
-        final GameCourt court = new GameCourt(status, WIDTH, HEIGHT);
+        final GameCourt court = new GameCourt(WIDTH, HEIGHT);
         
         court.init();
         //frame.add(court, BorderLayout.CENTER);
@@ -76,6 +75,17 @@ public class Game implements Runnable {
                 }
             });
         control_panel.add(reset);
+        final JButton returnToMenu = new JButton("Main Menu");
+        returnToMenu.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+                screen.removeAll();
+                screen.add(main, BorderLayout.CENTER);
+                
+                frame.validate();
+                frame.repaint();
+            }
+        });
+        control_panel.add(returnToMenu);
 
         // Put the frame on the screen
         frame.pack();

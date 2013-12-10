@@ -61,7 +61,7 @@ public class Net extends GameObj {
 			}
 			
 			if ((t < t2 || t2 < 0 || Double.isNaN(t2)) && t > 0 && t < 1) {
-				System.out.println("collide net " + t + " " + (b.pos_y+ dt*b.v_y*t));
+				
 				double ty = b.pos_y+b.v_y*dt*t;
 				if (ty > pos_y-height/2 && ty < pos_y+height/2) {
 					System.out.println("collide net really");

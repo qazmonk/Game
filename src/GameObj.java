@@ -39,6 +39,8 @@ public abstract class GameObj {
 	 */
 	public double max_x;
 	public double max_y;
+	public double min_x;
+	public double min_y;
 	
 	public double PIXELS_PER_METER;
 	
@@ -64,8 +66,8 @@ public abstract class GameObj {
 	 * active area the user defines for it).
 	 */ 
 	public void clip(){
-		if (pos_x < width/2) {
-			pos_x = width/2;
+		if (pos_x < width/2+min_x) {
+			pos_x = width/2+min_x;
 			hitWall(new Vec(1, 0));
 		}
 		else if (pos_x > max_x-width/2) {
@@ -73,8 +75,8 @@ public abstract class GameObj {
 			hitWall(new Vec(-1, 0));
 		}
 
-		if (pos_y < height/2){
-			pos_y = height/2;
+		if (pos_y < height/2+min_y){
+			pos_y = height/2+min_y;
 			hitWall(new Vec(0, -1));
 		}
 		else if (pos_y > max_y-height/2) {
@@ -106,5 +108,10 @@ public abstract class GameObj {
 	 *  etc.)
 	 */
 	abstract public void paint(Graphics g);
+	
+	public boolean isMoving(double dt) {
+		
+		return (Math.sqrt(v_x*v_x+v_y*v_y)*dt > 1);
+	}
 	
 }
