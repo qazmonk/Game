@@ -6,9 +6,12 @@
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import java.util.ArrayList;
@@ -52,6 +55,10 @@ public class GameCourt extends JPanel {
 	
 	private Player lastTouch;
 	
+	private BufferedImage backdrop = null;
+	private BufferedImage redFlag = null;
+	private BufferedImage blueFlag = null;
+	
 	private enum GameState {
 		Playing, LeftPlayerServing, RightPlayerServing, PointOver, NotPlaying
 	}
@@ -67,12 +74,20 @@ public class GameCourt extends JPanel {
 		// creates border around the court area, JComponent method
 		COURT_WIDTH = w;
 		COURT_HEIGHT = h;
+		
 		PIXELS_PER_METER = COURT_LENGTH/13.4;
+		
 		setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		
 		bs = new ArrayList<Birdie>();
         
-		
+		try {
+			backdrop = ImageIO.read(new File("Backdrop.jpg"));
+			redFlag = ImageIO.read(new File("RedFlag.png"));
+			blueFlag = ImageIO.read(new File("BlueFlag.png"));
+		} catch (IOException e) {
+			System.out.println("error with file");
+		}
         // The timer is an object which triggers an action periodically
         // with the given INTERVAL. One registers an ActionListener with
         // this timer, whose actionPerformed() method will be called 
@@ -195,10 +210,10 @@ public class GameCourt extends JPanel {
 	private boolean RightPlayerPoint() {
 		
 		if (out(b.pos_x)) {
-			System.out.println("hit out");
+			
 			return b.lastHitBy == p;
 		}
-		System.out.println("hit in");
+		
 		return pointFor(b.pos_x) == o;
 	}
 	void tick(){
@@ -209,26 +224,26 @@ public class GameCourt extends JPanel {
 				if (!b.inPlay()) {
 					
 					if (RightPlayerPoint()) {
-						System.out.println("Right won");
+						
 						serving = o;
 						score_right.inc();
 					} else {
-						System.out.println("Left won");
+						
 						serving = p;
 						score_left.inc();
 					}
 					
-					System.out.println("Point Over");
+					
 					state = GameState.PointOver;
 				}
 				if (b.wasHit()) {
-					System.out.println(lastTouch + " " + b.lastHitBy);
+					
 					lastTouch = b.lastHitBy;
 				}
 				break;
 			case LeftPlayerServing:
 				
-				System.out.println("Left Serve");
+				
 				p.isServing = true;
 				p.grabBirdie();
 				b.serve();
@@ -239,7 +254,7 @@ public class GameCourt extends JPanel {
 				break;
 			case RightPlayerServing:
 				
-				System.out.println("Right Serve");
+				
 				p.isServing = false;
 				
 				b.serve();
@@ -254,7 +269,7 @@ public class GameCourt extends JPanel {
 				p.stopMoving();
 				o.stopMoving();
 				if (!b.isMoving(INTERVAL/1000.0)) {
-					System.out.println("point won by " + serving.toString());
+					
 					if (serving == p) {
 						state = GameState.LeftPlayerServing;
 					} else if (serving == o) {
@@ -290,13 +305,20 @@ public class GameCourt extends JPanel {
 	@Override 
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
+		g.setColor(new Color(147, 147, 147));
+		g.fillRect(0, 0, COURT_WIDTH, COURT_HEIGHT);
 		b.paint(g);
 		p.paint(g);
 		n.paint(g);
 		o.paint(g);
 		
-		g.drawRect(COURT_WIDTH/2-2-COURT_LENGTH/2, (int)(COURT_HEIGHT-2*PIXELS_PER_METER), 4, (int)(2*PIXELS_PER_METER));
-		g.drawRect(COURT_WIDTH/2-2+COURT_LENGTH/2, (int)(COURT_HEIGHT-2*PIXELS_PER_METER), 4, (int)(2*PIXELS_PER_METER));
+		g.drawImage(blueFlag, COURT_WIDTH/2-COURT_LENGTH/2-blueFlag.getWidth(), 
+				COURT_HEIGHT-blueFlag.getHeight(), blueFlag.getWidth(), 
+				blueFlag.getHeight(), null);
+		g.drawImage(redFlag, COURT_WIDTH/2+COURT_LENGTH/2, 
+				COURT_HEIGHT-redFlag.getHeight(), redFlag.getWidth(), 
+				redFlag.getHeight(), null);
+		
 		
 		score_left.paint(g);
 		score_right.paint(g);

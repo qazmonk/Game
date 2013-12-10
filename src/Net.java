@@ -1,20 +1,35 @@
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import javax.imageio.ImageIO;
 
 
 public class Net extends GameObj {
 
 	
+	private BufferedImage image = null;
 	
 	public Net(double ppm, double x, double y) {
 		PIXELS_PER_METER = ppm;
 		pos_x = x;
 		pos_y = y;
 		
-		height = toPixels(1.7);
-		width = toPixels(0.1);
+		
+		
+		try {
+			image = ImageIO.read(new File("Net.png"));
+			
+		} catch (IOException e) {
+			System.out.println("error with file");
+		}
+		
+		width = image.getWidth();
+		height = image.getHeight();
 	}
 	
 	@Override
@@ -91,8 +106,7 @@ public class Net extends GameObj {
 	}
 	@Override
 	public void paint(Graphics g) {
-		g.setColor(Color.GRAY);
-		g.drawRect((int)(pos_x-width/2), (int)(pos_y-height/2), (int)width, (int)height);
+		g.drawImage(image, (int)(pos_x-width/2), (int)(pos_y-height/2), (int)width, (int)height, null);
 
 	}
 

@@ -10,7 +10,7 @@ public class Birdie extends GameObj {
 	private double bounce = 0.5;
 	
 	
-	private Color c = Color.GRAY;
+	private Color c = new Color(255, 252, 26);
 	
 	
 	

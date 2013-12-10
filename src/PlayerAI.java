@@ -36,7 +36,7 @@ public class PlayerAI {
 				p.leftReleased();
 			}
 			if (p.inRange(b) && !p.isServing) {
-				System.out.println("hit");
+				
 				p.leftPressed();
 				p.hitPressed();
 			}
@@ -51,7 +51,7 @@ public class PlayerAI {
 			waitingToServe = serveWait;
 		}
 		if (p.isServing && waitingToServe > 0) {
-			System.out.println(waitingToServe);
+			
 			waitingToServe--;
 		}
 	}

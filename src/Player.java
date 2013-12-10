@@ -1,6 +1,9 @@
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Stroke;
 import java.util.ArrayList;
 
 
@@ -35,7 +38,9 @@ public class Player extends GameObj{
 	
 	private boolean notMoving = false;
 	
-	
+	private double racketPos = Math.PI;
+	private static final double racketSpeed = Math.PI/6;
+	private boolean swinging = false;
 	
 	public Player(boolean right, double ppm, int min_x, int min_y, int max_x, int max_y) {
 		facesRight = right;
@@ -56,7 +61,7 @@ public class Player extends GameObj{
 		width = toPixels(0.7);
 		height = toPixels(1.2);
 		arm_x = 0;
-		arm_y = -toPixels(1.2*0.5);
+		arm_y = -toPixels(1.2*0.3);
 		WALK_SPEED = toPixels(0.5);
 		MAX_SPEED = toPixels(4);
 		range_x = toPixels(1.3);
@@ -70,7 +75,6 @@ public class Player extends GameObj{
 		
 		
 		double[] t = getHitVector(0, arm_x-range_y/2);
-		System.out.println(facesRight + " " + t[0] + " " + t[1]);
 	}
 	
 
@@ -180,7 +184,16 @@ public class Player extends GameObj{
 		if (hitCount > 0) {
 			v_x = 0;
 		}
+		
 		hitCount--;
+		
+		if (racketPos < 0) {
+			racketPos = Math.PI;
+			swinging = false;
+		}
+		if (swinging) {
+			racketPos -= racketSpeed;
+		}
 		
 	}
 	
@@ -200,7 +213,7 @@ public class Player extends GameObj{
 	}
 	public boolean swing() {
 		
-		
+		swinging = true;
 		double x = birdie.pos_x - (pos_x + arm_x);
 		double y = birdie.pos_y - (pos_y + arm_y);
 
@@ -241,11 +254,34 @@ public class Player extends GameObj{
 	
 	
 	public void  paint(Graphics g) {
+		Graphics2D g2 = (Graphics2D) g;
+		g2.setStroke(new BasicStroke(3));
+		
 		g.setColor(c);
-		g.fillRect((int)(pos_x-width/2), (int)(pos_y-height/2), (int)width, (int)height);
+		g.fillOval((int)(pos_x-width/2), (int)(pos_y+arm_y-(height/2*0.8)/2), (int)width, (int)(height/2*0.8));
+		g2.setColor(Color.black);
+		g2.drawOval((int)(pos_x-width/2), (int)(pos_y+arm_y-(height/2*0.8)/2), (int)width, (int)(height/2*0.8));
+		
+		
+		g.setColor(c);
+		g.fillRect((int)(pos_x-width/2), (int)(pos_y+arm_y), (int)width, (int)(height/2+Math.abs(arm_y)));
+		g2.setColor(Color.black);
+		g2.drawRect((int)(pos_x-width/2), (int)(pos_y+arm_y), (int)width, (int)(height/2+Math.abs(arm_y)));
+		
+		
+		int x2 = 0;
+		if (facesRight) {
+			x2 = (int)(pos_x+range_y*Math.cos(racketPos));
+		} else {
+			x2 = (int)(pos_x-range_y*Math.cos(racketPos));
+		}
+		
+		g2.setColor(Color.black);
+		g.drawLine((int)(pos_x), (int)(pos_y+arm_y), x2, (int)(pos_y+arm_y-range_y*Math.sin(racketPos)));
 		Color t = new Color(0, 0, 0, 150);
 		
 		g.setColor(t);
+		
 		if (DEBUG) {
 			g.fillOval((int)(pos_x-range_x+arm_x), (int)(pos_y-range_y+arm_y), (int)range_x*2, (int)range_y*2);
 		}
