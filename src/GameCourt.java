@@ -185,7 +185,7 @@ public class GameCourt extends JPanel {
 		
 		
 		
-		opponentAI = new PlayerAI(o, p, b);
+		opponentAI = new PlayerAI(o, p, b, COURT_LENGTH);
 		p.setOpponent(opponentAI);
 		bs.add(b);
 		
@@ -216,7 +216,7 @@ public class GameCourt extends JPanel {
 	private boolean RightPlayerPoint() {
 		
 		if (out(b.pos_x)) {
-			
+			System.out.println("hit out by " + b.lastHitBy);
 			return b.lastHitBy == p;
 		}
 		

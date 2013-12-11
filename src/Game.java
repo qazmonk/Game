@@ -29,7 +29,13 @@ public class Game implements Runnable {
 			+ "<br>jump with the 'w' key. When you hit enter your robot swings his"
 			+ "<br>racquet over head in a 180 degree arc. You are locked in infinite"
 			+ "<br>badminton combot with your robot adversary so play for as long as"
-			+ "<br>you like and have fun!</html>";
+			+ "<br>you like and have fun!"
+			+ "<br><br>Here are some cool features for your consideration:"
+			+ "<br>1.) Physics of a birdie (gravity, drag, etc)"
+			+ "<br>2.) Collisions (ground, walls, top of net)"
+			+ "<br>3.) EnemyAI, the opponent predicts where the birdie will land"
+			+ "<br>\tand then determines the appropriate shot to hit"
+			+ "</html>";
 	private int WIDTH = 900, HEIGHT = 750;
     public void run(){
         // NOTE : recall that the 'final' keyword notes inmutability
@@ -37,7 +43,7 @@ public class Game implements Runnable {
 
         // Top-level frame in which game components live
 		  // Be sure to change "TOP LEVEL FRAME" to the name of your game
-        final JFrame frame = new JFrame("TOP LEVEL FRAME");
+        final JFrame frame = new JFrame("Robot Badminton");
         frame.setLocation(300,300);
 
 		  // Status panel

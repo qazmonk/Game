@@ -10,57 +10,49 @@ public class PlayerAI {
 	double servePos;
 	private static int serveWait = 50;
 	private int waitingToServe = 50;
+	private double court_width;
 	
 	private ArrayList<Instruction> todo;
 	
-	public PlayerAI(Player p, Player o, Birdie b) {
+	public PlayerAI(Player p, Player o, Birdie b, double court_width) {
 		this.p = p;
 		this.b = b;
 		this.o = o;
 		targetOffset = p.width/3;
 		servePos = p.toPixels(1.98);
 		todo = new ArrayList<Instruction>();
+		this.court_width = court_width;
 	}
 	public void opponentHit() {
-		System.out.println("new instruction");
+		//System.out.println("new instruction");
 		todo = new ArrayList<Instruction>();
 		double x = b.predictXforY(p.height*1.4, 25/1000.0);
 		x -= targetOffset;
 		todo.add(this.new Instruction(InstructType.MOVETO, x));
-		todo.add(this.new Instruction(InstructType.HIT, x));
+		if (x < p.min_x+court_width/8)
+			todo.add(this.new Instruction(InstructType.DROP, x));
+		else if (x < p.min_x + court_width/4)
+			todo.add(this.new Instruction(InstructType.HIT, x));
+		else if (x < p.min_x + court_width/2) {
+			//System.out.println(x + " " + p.min_x + " " + court_width + " " + ( p.min_x + court_width));
+			todo.add(this.new Instruction(InstructType.CLEAR, x));
+		}
 		System.out.println(x + " " + b.pos_x);
 	}
 	public void update(double dt) {
 		p.hitReleased();
-		/*if (b.lastHitBy == p) {
-			if (p.pos_x > (p.max_x + p.min_x) / 2) {
-				p.leftPressed();
-				p.rightReleased();
-			} else {
-				p.rightPressed();
-				p.leftReleased();
-			}
-		} else {
-			if (p.pos_x + targetOffset > b.pos_x) {
-				p.leftPressed();
-				p.rightReleased();
-			} else {
-				p.rightPressed();
-				p.leftReleased();
-			}
-			if (p.inRange(b) && !p.isServing) {
-				
-				p.leftPressed();
-				p.hitPressed();
-			}
-		}*/
+		
 		if (todo.size() > 0) {
 			Instruction i = todo.get(0);
 			i.execute();
 			if (i.isDone) {
 				todo.remove(0);
+				if (i.t == InstructType.CLEAR || i.t == InstructType.DROP ||
+					i.t == InstructType.HIT) {
+					todo.add(this.new Instruction(InstructType.MOVETO, p.min_x + court_width/4));
+				}
 			}
-			System.out.println(i.t + " " + i.isDone + " " + i.v + " " + p.pos_x);
+			//System.out.println(i.t + " " + i.isDone + " " + i.v + " " + p.pos_x);
 		}
 		if (o.isServing) {
 			todo.clear();
@@ -77,7 +69,7 @@ public class PlayerAI {
 			waitingToServe--;
 		}
 	}
-	private  enum InstructType {HIT, MOVETO}
+	private  enum InstructType {CLEAR, DROP, HIT, MOVETO}
 	
 	private class Instruction {
 		
@@ -97,12 +89,36 @@ public class PlayerAI {
 			switch(t) {
 			case HIT:
 				if (hasHit) {
+					
+					isDone = true;
+				}
+				if (p.inRange(b)) {
+					
+					
+					p.hitPressed();
+					hasHit = true;
+				} 
+				break;
+			case CLEAR:
+				if (hasHit) {
 					p.leftReleased();
 					isDone = true;
 				}
 				if (p.inRange(b)) {
 					
 					p.leftPressed();
+					p.hitPressed();
+					hasHit = true;
+				} 
+				break;
+			case DROP: 
+				if (hasHit) {
+					p.rightReleased();
+					isDone = true;
+				}
+				if (p.inRange(b)) {
+					
+					p.rightPressed();
 					p.hitPressed();
 					hasHit = true;
 				} 

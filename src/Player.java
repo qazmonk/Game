@@ -26,7 +26,7 @@ public class Player extends GameObj{
 	private double smashStrength = 80;
 	private double hitStrength = 40;
 	private double dropStrength = 15;
-	private double serveStrength = 20;
+	private double serveStrength = 25;
 	private double arm_x, arm_y;
 	
 	private double range_x, range_y;
