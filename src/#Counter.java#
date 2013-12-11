@@ -20,7 +20,7 @@ public class Counter extends GameObj {
 		val = s;
 		
 		try {
-			bi = ImageIO.read(new File("Numbers.png"));
+			bi = ImageIO.read(new File("numbers.png"));
 		} catch (IOException e) {
 			System.out.println("error with file");
 		}

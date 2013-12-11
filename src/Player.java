@@ -14,7 +14,7 @@ public class Player extends GameObj{
 	private static double MAX_SPEED;
 	
 	private static final boolean DEBUG = false;
-	private boolean UP = false, LEFT = false, RIGHT = false, HIT = false;
+	public boolean UP = false, LEFT = false, RIGHT = false, HIT = false;
 	
 	private boolean onGround = false;
 	private double jumpStrength = 400;
@@ -41,8 +41,29 @@ public class Player extends GameObj{
 	private double racketPos = Math.PI;
 	private static final double racketSpeed = Math.PI/6;
 	private boolean swinging = false;
+	private int swingCount = 0;
+	
+	private PlayerAI opp;
 	
 	public Player(boolean right, double ppm, int min_x, int min_y, int max_x, int max_y) {
+		
+		
+		
+		this.initVars(right, ppm, min_x, min_y, max_x, max_y);
+		
+		
+		double[] t = getHitVector(0, arm_x-range_y/2);
+	}
+	
+	public Player(boolean right, double ppm, int min_x, int min_y, int max_x, int max_y, PlayerAI o) {
+		this.initVars(right, ppm, min_x, min_y, max_x, max_y);
+		opp = o;
+	}
+	
+	public void setOpponent(PlayerAI o) {
+		opp = o;
+	}
+	private void initVars(boolean right, double ppm, int min_x, int min_y, int max_x, int max_y) {
 		facesRight = right;
 		PIXELS_PER_METER = ppm;
 		
@@ -71,13 +92,7 @@ public class Player extends GameObj{
 		hitStrength = toPixels(hitStrength);
 		dropStrength = toPixels(dropStrength);
 		serveStrength = toPixels(serveStrength);
-		
-		
-		
-		double[] t = getHitVector(0, arm_x-range_y/2);
 	}
-	
-
 	
 	public void rightPressed() {
 		RIGHT = true;
@@ -175,16 +190,21 @@ public class Player extends GameObj{
 		}
 	
 		
-		if (HIT && hitCount <= 0) {
+		if (HIT && hitCount < 0 ) {
+			hitCount = hitSpeed;
+			swingCount = hitSpeed;
+			
+		}
+		if (swingCount > 0) {
 			if (swing()) {
 				isServing = false;
+				swingCount = 0;
 			}
-			hitCount = hitSpeed;
 		}
 		if (hitCount > 0) {
 			v_x = 0;
 		}
-		
+		swingCount--;
 		hitCount--;
 		
 		if (racketPos < 0) {
@@ -243,7 +263,12 @@ public class Player extends GameObj{
 			birdie.v_y = hv[1] * str;
 
 			birdie.lastHitBy = this;
-
+			if (opp != null)
+				opp.opponentHit();
+			else {
+				System.out.println("wut?");
+			}
+			
 			return true;
 
 		}

@@ -17,6 +17,19 @@ import javax.swing.*;
  * Main class that specifies the frame and widgets of the GUI
  */
 public class Game implements Runnable {
+	private static final String instructions = 
+			"<html>The rules to the game are very simple. You control a person sized "
+			+ "<br>robot who for some reason is playing badminton against another"
+			+ "<br>version of the same robot. The rules are exactly the same as "
+			+ "<br>standard badmiton. If the birdie lands in your opponents court or"
+			+ "<br>your opponent hits it out you get a point. The same goes for your"
+			+ "<br>oppenent. The robot badminton league isn't quite as popular as "
+			+ "<br>the robot soccer leauge so these robots are fairly simply. The "
+			+ "<br>robot can move left and right with the 'a' and 'd' keys an can "
+			+ "<br>jump with the 'w' key. When you hit enter your robot swings his"
+			+ "<br>racquet over head in a 180 degree arc. You are locked in infinite"
+			+ "<br>badminton combot with your robot adversary so play for as long as"
+			+ "<br>you like and have fun!</html>";
 	private int WIDTH = 900, HEIGHT = 750;
     public void run(){
         // NOTE : recall that the 'final' keyword notes inmutability
@@ -30,7 +43,9 @@ public class Game implements Runnable {
 		  // Status panel
        
         final JLabel status = new JLabel("Main Menu");
-      
+        
+        
+        final Instructions instructPage = new Instructions(WIDTH, HEIGHT, instructions);
         
         
         //Center Screen
@@ -55,8 +70,20 @@ public class Game implements Runnable {
         		frame.validate();
         	}
         });
+        final JButton instruct = new JButton("Instructions");
+        instruct.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		screen.removeAll();
+        		screen.add(instructPage, BorderLayout.CENTER);
+        	
+        	
+        		frame.repaint();
+        		frame.validate();
+        	}
+        });
         ArrayList<JButton> buttons = new ArrayList<JButton>();
         buttons.add(start);
+        buttons.add(instruct);
         final MainMenu main = new MainMenu(WIDTH, HEIGHT, buttons);
         screen.add(main, BorderLayout.CENTER);
         // Reset button

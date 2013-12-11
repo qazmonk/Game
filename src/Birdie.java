@@ -83,7 +83,24 @@ public class Birdie extends GameObj {
 		return !hasHitSomething;
 	}
 	
-	
+	public double predictXforY(double tar_y, double dt) {
+		double x = pos_x;
+		double y = pos_y;
+		double vx = v_x;
+		double vy = v_y;
+		tar_y = max_y-tar_y;
+		
+		System.out.println(x + " " + y + " " + tar_y + " " + max_x/2);
+		while (y < tar_y || x < max_x/2) {
+			vy -= toPixels(drag*(toMeters(vy)*toMeters(vy))*dt*Math.signum(vy));
+			vx -= toPixels(drag*(toMeters(vx)*toMeters(vx))*dt*Math.signum(vx));
+			vy += toPixels(grav)*dt;
+			y += vy*dt;
+			x += vx*dt;
+			System.out.println(x + " " + y + " " + tar_y);
+		}
+		return x;
+	}
 	
 	
 	

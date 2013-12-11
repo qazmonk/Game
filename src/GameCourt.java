@@ -59,6 +59,8 @@ public class GameCourt extends JPanel {
 	private BufferedImage redFlag = null;
 	private BufferedImage blueFlag = null;
 	
+	
+	
 	private enum GameState {
 		Playing, LeftPlayerServing, RightPlayerServing, PointOver, NotPlaying
 	}
@@ -154,14 +156,17 @@ public class GameCourt extends JPanel {
 		state = GameState.LeftPlayerServing;
 		
 		
-		
 		p = new Player(true, PIXELS_PER_METER, 0, 0, COURT_WIDTH/2, COURT_HEIGHT);
 		p.pos_x = 200.0;
 		p.pos_y = COURT_HEIGHT-p.height/2;
 		
+		
+		
+		
+		
 		o = new Player(false, PIXELS_PER_METER, COURT_WIDTH/2, 0, COURT_WIDTH, COURT_HEIGHT);
 		o.pos_x = 400.0;
-		o.pos_y = COURT_HEIGHT-p.height/2;
+		o.pos_y = COURT_HEIGHT-o.height/2;
 		
 		
 		
@@ -174,18 +179,19 @@ public class GameCourt extends JPanel {
 		n = new Net(PIXELS_PER_METER, COURT_WIDTH/2, COURT_HEIGHT);
 		n.pos_y -= n.height/2;
 		
-		
 		p.addBirdie(b);
 		
 		p.isServing = true;
 		
-		opponentAI = new PlayerAI(o, p, b);
 		
+		
+		opponentAI = new PlayerAI(o, p, b);
+		p.setOpponent(opponentAI);
 		bs.add(b);
 		
 		o.addBirdie(b);
 		
-	
+		
 		score_left = new Counter(0, COURT_WIDTH/3, 200);
 		score_right = new Counter(0, COURT_WIDTH*2/3, 200);
 		// Make sure that this component has the keyboard focus
@@ -237,8 +243,11 @@ public class GameCourt extends JPanel {
 					state = GameState.PointOver;
 				}
 				if (b.wasHit()) {
-					
+					System.out.println("hit");
 					lastTouch = b.lastHitBy;
+					if (b.lastHitBy == p) {
+						//opponentAI.opponentHit();
+					}
 				}
 				break;
 			case LeftPlayerServing:
